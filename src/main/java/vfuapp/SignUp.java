@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class SignUp {
     private void printWelcomeMessage() {
-        System.out.println("        Welcome to AJUni!");
+        System.out.println("        Welcome to VFUniversity!");
         System.out.println();
     }
 
@@ -14,7 +14,7 @@ public class SignUp {
         Admin.printAdmins();
 
         System.out.println();
-        System.out.println("Enter 'Q' for quit PR");
+        System.out.println("Enter 'Q' for quit the registration system");
         System.out.println();
 
         Scanner in = new Scanner(System.in);
@@ -23,7 +23,7 @@ public class SignUp {
         String input = in.nextLine();
 
         if (input.equals("Q") || input.equals("q")) {
-            System.out.println("Goodbye");
+            System.out.println("Thank you for using our registration system. Goodbye!");
             System.exit(0);
         }
 
@@ -32,7 +32,7 @@ public class SignUp {
         System.out.print("Enter password: ");
         input = in.nextLine();
         if (input.equals("Q") || input.equals("q")) {
-            System.out.println("Goodbye");
+            System.out.println("Thank you for using our registration system. Goodbye!");
             System.exit(0);
         }
         String password = input;
@@ -45,11 +45,11 @@ public class SignUp {
         for (Admin admin : adminList) {
             if (admin.getUsername().equals(username) && admin.getPassword().equals(password)) {
                 System.out.println("Welcome, " + admin.getFirstName() + " " + admin.getLastName() + "!");
-                Admin.runAdmin();
+                admin.runAdmin();
             }
             else {
-                System.out.println("Sorry, we can't recognize you. Check your credentials and try again later");
-                System.out.println("Goodbye");
+                System.out.println("Sorry, we can't recognize credentials. Please double-check and try again later");
+                System.out.println("Thank you for using our registration system. Goodbye!");
                 System.exit(0);
                 return;
             }
