@@ -1,5 +1,7 @@
 package vfuapp;
 
+import vfuapp.database.DBUtils;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -10,8 +12,25 @@ public class SignUp {
     }
 
     private void signUp() {
-        Admin.addAdmin(new Admin("Ivan", "Sidorov"));
+        Admin admin = new Admin("Ivan", "Sidorov");
+        Admin.addAdmin(admin);
+
+        System.out.println();
+        System.out.println("-------------------------");
+        System.out.println("Local Admins list:");
         Admin.printAdmins();
+
+        System.out.println();
+        System.out.println("-------------------------");
+        System.out.println("DB Users list:");
+        List<Person> dbPersons = DBUtils.getTablePersonData();
+        System.out.println(dbPersons);
+
+        System.out.println();
+        System.out.println("-------------------------");
+        System.out.println("DB Admin list:");
+        List<Admin> dbAdmins = DBUtils.getTableAdminData();
+        System.out.println(dbAdmins);
 
         System.out.println();
         System.out.println("Enter 'Q' for quit the registration system");
@@ -43,7 +62,7 @@ public class SignUp {
     private void checkCredentials(String username, String password){
         List<Admin> adminList = Admin.getAdmins();
         for (Admin admin : adminList) {
-            if (admin.getUsername().equals(username) && admin.getPassword().equals(password)) {
+            if (admin.getUserName().equals(username) && admin.getPassword().equals(password)) {
                 System.out.println("Welcome, " + admin.getFirstName() + " " + admin.getLastName() + "!");
                 admin.runAdmin();
             }

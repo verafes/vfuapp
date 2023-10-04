@@ -1,6 +1,7 @@
 package vfuapp;
 
 import utils.Utils;
+import vfuapp.database.DBUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,26 +10,73 @@ import java.util.Scanner;
 public class Admin extends Person {
     private String id = "A";
     private static int adminID = 1000001;
+    private int tblAdminId;
+    private int tblAdminPersonId;
     private static List<Admin> admins = new ArrayList<>();
+    private static int idAdmin = 1;
 
     public Admin(String firstName, String lastName) {
         super(firstName, lastName);
         this.id = id + adminID;
         adminID++;
+        this.tblAdminId = idAdmin;
+        idAdmin++;
     }
+
+    public Admin(){};
 
     public static void addAdmin(Admin admin){
         admins.add(admin);
+        DBUtils.createAdmin(admin);
     }
 
     public static  void printAdmins() {
         for(Admin admin : admins) {
             System.out.println(admin.getFirstName());
             System.out.println(admin.getLastName());
-            System.out.println(admin.getUsername());
+            System.out.println(admin.getUserName());
             System.out.println(admin.getPassword());
             System.out.println(admin.id);
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public int getTblAdminId() {
+        return tblAdminId;
+    }
+
+    public void setTblAdminId(int tblAdminId) {
+        this.tblAdminId = tblAdminId;
+    }
+
+    public int getTblAdminPersonId() {
+        return tblAdminPersonId;
+    }
+
+    public void setTblAdminPersonId(int tblAdminPersonId) {
+        this.tblAdminPersonId = tblAdminPersonId;
+    }
+
+    /* for debugging */
+    @Override
+    public String toString() {
+        return "Admin {" +
+                "tblAdminId = " + getTblAdminId() +
+                ", tblPersonAdminId = " + getTblAdminPersonId() +
+                ", tblPersonId = " + getTblPersonId() +
+                ", firstName = '" + getFirstName() + "'" +
+                ", lastName = '" + getLastName() + "'" +
+                ", username = '" + getUserName() + "'" +
+                ", password = '" + getPassword() + "'" +
+                ", id = " + getId() +
+                "}";
     }
 
     public static List<Admin> getAdmins() {
@@ -51,12 +99,13 @@ public class Admin extends Person {
                 System.exit(0);
             }
             case "1" -> runRegistration();
-            case "2" -> runPrintConfirmation();
+            case "2" -> runPrintInformation();
         }
     }
 
     private void runRegistration() {
         System.out.println("Running Administration");
+
         Utils.printExitMessage();
 
         Scanner in = new Scanner(System.in);
@@ -65,6 +114,7 @@ public class Admin extends Person {
         System.out.println("1 - Register new Student");
         System.out.println("2 - Register new Professor");
         System.out.println("3 - Register new Admin");
+
         String input = in.nextLine();
 
         switch (input) {
@@ -77,8 +127,8 @@ public class Admin extends Person {
             case "3" -> runRegisterNewAdmin();
         }
     }
-    private void runPrintConfirmation() {
-        System.out.println("Running Print Confirmation");
+    private void runPrintInformation() {
+        System.out.println("Running Print Information");
         Utils.printExitMessage();
     }
 
