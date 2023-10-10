@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Admin extends Person {
+public class Admin extends Person implements IPrintAdmin {
     private String id = "A";
     private static int adminID = 1000001;
     private int tblAdminId;
     private int tblAdminPersonId;
-    private static List<Admin> admins = new ArrayList<>();
+    public static List<Admin> admins = new ArrayList<>();
     private static int idAdmin = 1;
 
     public Admin(String firstName, String lastName) {
@@ -21,13 +21,15 @@ public class Admin extends Person {
         adminID++;
         this.tblAdminId = idAdmin;
         idAdmin++;
+        this.tblAdminPersonId = getTblPersonId();
     }
 
     public Admin(){};
 
     public static void addAdmin(Admin admin){
-        admins.add(admin);
+//        admins.add(admin);
         DBUtils.createAdmin(admin);
+        admins = DBUtils.getTableAdminData();
     }
 
     public static  void printAdmins() {
