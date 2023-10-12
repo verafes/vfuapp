@@ -1,6 +1,6 @@
 package vfuapp;
 
-public abstract class Person {
+public  class Person { //abstract
     private String firstName;
     private String lastName;
     private String userName;

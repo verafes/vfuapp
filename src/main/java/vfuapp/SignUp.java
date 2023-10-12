@@ -25,6 +25,7 @@ public class SignUp implements IExit {
         // print admins: is accessible for Admins only
         admins.get(0)
                 .printAdminsList();
+        admins.get(0).printStudentsList();
 
         printQForExit();
 
