@@ -14,6 +14,11 @@ public interface IExit {
         }
     }
 
+    default void exitIfQ(){
+        System.out.println("Thank you for using our registration system. Goodbye!");
+        System.exit(0);
+    }
+
     default void ifUnauthorizedUser(){
         System.out.println("Sorry, we can't recognize credentials. Please double-check and try again later");
         System.out.println("Thank you for using our registration system. Goodbye!");
