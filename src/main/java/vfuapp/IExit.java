@@ -19,7 +19,7 @@ public interface IExit {
         System.exit(0);
     }
 
-    default void ifUnauthorizedUser(){
+    default void exitIfAuthorizedUser(){
         System.out.println("Sorry, we can't recognize credentials. Please double-check and try again later");
         System.out.println("Thank you for using our registration system. Goodbye!");
         System.exit(0);

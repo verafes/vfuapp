@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS university;
 USE university;
 
 CREATE TABLE IF NOT EXISTS tbl_person (
-    person_id BIGINT PRIMARY KEY,
+    person_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     firstName VARCHAR(80),
     lastName VARCHAR(100),
     username VARCHAR(115),
@@ -10,27 +10,27 @@ CREATE TABLE IF NOT EXISTS tbl_person (
 );
 
 CREATE TABLE IF NOT EXISTS tbl_admin (
-    admin_id BIGINT PRIMARY KEY,
+    admin_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     person_id BIGINT,
     id VARCHAR(8)
 );
 
 CREATE TABLE IF NOT EXISTS tbl_student (
-    student_id BIGINT PRIMARY KEY,
+    student_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     person_id BIGINT,
     academic_id BIGINT,
     id VARCHAR(8)
 );
 
 CREATE TABLE IF NOT EXISTS tbl_professor (
-    professor_id BIGINT PRIMARY KEY,
+    professor_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     person_id BIGINT,
     academic_id BIGINT,
     id VARCHAR(8)
 );
 
 CREATE TABLE IF NOT EXISTS tbl_academic (
-    academic_id BIGINT PRIMARY KEY,
+    academic_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     course_id BIGINT,
     course2_id BIGINT,
     course3_id BIGINT,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS tbl_academic (
 );
 
 CREATE TABLE IF NOT EXISTS tbl_course (
-    course_id BIGINT PRIMARY KEY,
+    course_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     course_name VARCHAR(8),
     price BIGINT
 );
