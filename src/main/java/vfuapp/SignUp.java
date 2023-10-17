@@ -1,8 +1,6 @@
 package vfuapp;
 
 import vfuapp.database.DBUtils;
-
-import java.util.List;
 import java.util.Scanner;
 
 import static vfuapp.Admin.admins;
@@ -49,16 +47,13 @@ public class SignUp implements IExit {
         for (Admin admin : admins) {
             if (admin.getUserName().equals(username)
                     && admin.getPassword().equals(password)
-                    && admin.getId().startsWith("A")) {
+                    && admin.getRoleId().startsWith("A")) {
                 System.out.println("Welcome, " + admin.getFirstName() + " " + admin.getLastName() + "!");
                 admin.runAdmin();
             }
             // To DO: check Credentials for Students and Professors
-            else {
-                ifUnauthorizedUser();
-                return;
-            }
         }
+        exitIfAuthorizedUser();
     }
 
     public void runVFUApp(){

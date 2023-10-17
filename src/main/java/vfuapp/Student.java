@@ -1,75 +1,38 @@
 package vfuapp;
 
 import vfuapp.database.DBUtils;
+import vfuapp.database.TableName;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Student extends Academic {
-    private String id = "S";
-    private static int studentID = 1000001;
     private int tblStudentId;
     private int tblStudentPersonId;
     private int tblStudentAcademicId;
+    private String roleId = "S";
     public static List<Student> students = new ArrayList<>();
-    private static int idStudent = 1;
 
     public Student(String firstName, String lastName, List<String> courses) {
         super(firstName, lastName, courses);
-        this.id = id + studentID;
-        studentID++;
-        this.tblStudentId = idStudent;
-        idStudent++;
+        int lastTblStudentId = DBUtils.getLastIdFromTable(TableName.STUDENT);
+        this.tblStudentId = lastTblStudentId + 1;
         this.tblStudentPersonId = getTblPersonId();
         this.tblStudentAcademicId = getTblAcademicId();
+        this.roleId = roleId + 2000 +tblStudentId;
     }
 
     public Student(String firstName, String lastName) {
         super(firstName, lastName, new ArrayList<>());
-        this.id = id + studentID;
-        studentID++;
-        this.tblStudentId = idStudent;
-        idStudent++;
+        int lastTblStudentId = DBUtils.getLastIdFromTable(TableName.STUDENT);
+        this.tblStudentId = lastTblStudentId + 1;
         this.tblStudentPersonId = getTblPersonId();
         this.tblStudentAcademicId = getTblAcademicId();
+        this.roleId = roleId + 2000 +tblStudentId;
     }
 
     public Student() {}
 
-    public static void addStudent(Student student) {
-        DBUtils.insertStudent(student);
-        students = DBUtils.getTableStudentData();
-    }
-
-    @Override
-    public String toString() {
-        return "Admin {" +
-                "tblStudentId = " + getTblStudentId() +
-                ", tblPersonStudentId = " + getTblStudentPersonId() +
-                ", tblStudentAcademicId = " + getTblStudentAcademicId() +
-                ", tblPersonId = " + getTblPersonId() +
-                ", firstName = '" + getFirstName() + "'" +
-                ", lastName = '" + getLastName() + "'" +
-                ", username = '" + getUserName() + "'" +
-                ", password = '" + getPassword() + "'" +
-                ", id = " + getId() +
-                ", tblAcademicId = " + getTblAcademicId() +
-                ", course1 = " + getCourse1() +
-                ", course2 = " + getCourse2() +
-                ", course3 = " + getCourse3() +
-                ", course4 = " + getCourse4() +
-                ", course5 = " + getCourse5() +
-                ", course6 = " + getCourse6() +
-                "}";
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public int getTblStudentId() {
         return tblStudentId;
@@ -93,5 +56,52 @@ public class Student extends Academic {
 
     public void setTblStudentAcademicId(int tblStudentAcademicId) {
         this.tblStudentAcademicId = tblStudentAcademicId;
+    }
+
+    public String getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(String roleId) {
+        this.roleId = roleId;
+    }
+
+    public static void addStudent(Student student) {
+        DBUtils.insertStudent(student);
+        students = DBUtils.getTableStudentData();
+    }
+
+    private String getCourseName (int courseId) {
+        List<Course> courses = DBUtils.getTableCourseData();
+        for (Course course : courses) {
+            if(course.getTblCourseId() == courseId) {
+                return course.getCourseName();
+            }
+        }
+
+        return "";
+    }
+
+    @Override
+    public String toString() {
+        return "\nStudent {\n" +
+                "tblStudentId = " + getTblStudentId() + ",\n" +
+                "tblPersonId = " + getTblPersonId() + ",\n" +
+                "tblStudentPersonId = " + getTblStudentPersonId() + ",\n" +
+                "tblAcademicId = " + getTblAcademicId() + ",\n" +
+                "tblStudentAcademicId = " + getTblStudentAcademicId() + ",\n" +
+                "roleId = " + getRoleId() + ",\n" +
+                "firstName = '" + getFirstName() + "'" + ",\n" +
+                "lastName = '" + getLastName() + "'" + ",\n" +
+                "username = '" + getUserName() + "'" + ",\n" +
+                "password = '" + getPassword() + "'" + ",\n" +
+                "Student enrolled to courses: \n" +
+                "course1 = " + getCourse1() + ",\n" +
+                "course2 = " + getCourse2() + ",\n" +
+                "course3 = " + getCourse3() + ",\n" +
+                "course4 = " + getCourse4() + ",\n" +
+                "course5 = " + getCourse5() + ",\n" +
+                "course6 = " + getCourse6() + ",\n" +
+                "},\n";
     }
 }

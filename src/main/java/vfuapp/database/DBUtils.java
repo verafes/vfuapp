@@ -1,14 +1,8 @@
 package vfuapp.database;
 
-import vfuapp.Admin;
-import vfuapp.Person;
-import vfuapp.Student;
+import vfuapp.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,26 +11,49 @@ public class DBUtils {
     private static final String SELECT_ADMINS = "SELECT * FROM tbl_admin";
     private static final String SELECT_STUDENTS = "SELECT * FROM tbl_student";
     private static final String SELECT_ACADEMICS = "SELECT * FROM tbl_academic";
+    private static final String SELECT_COURSES = "SELECT * FROM tbl_course";
 
-    private static final String CREATE_USER =
+    private static final String SELECT_LAST_PERSON_ID = "SELECT max(person_id) FROM tbl_person";
+    private static final String SELECT_LAST_ADMIN_ID = "SELECT max(admin_id) FROM tbl_admin";
+    private static final String SELECT_LAST_STUDENT_ID = "SELECT max(student_id) FROM tbl_student";
+    private static final String SELECT_LAST_PROFESSOR_ID = "SELECT max(professor_id) FROM tbl_professor";
+    private static final String SELECT_LAST_ACADEMIC_ID = "SELECT max(academic_id) FROM tbl_academic";
+    private static final String SELECT_LAST_COURSE_ID = "SELECT max(course_id) FROM tbl_course";
+
+    private static final String INSERT_PERSON =
             "INSERT INTO tbl_person(person_id, firstName, lastName, userName, password) VALUES (?, ?, ?, ?, ?);";
-    private static final String CREATE_ADMIN =
+    private static final String INSERT_ADMIN =
             "INSERT INTO tbl_admin(admin_id, person_id, id) VALUES (?, ?, ?);";
-    private static final String CREATE_STUDENT =
+    private static final String INSERT_STUDENT =
             "INSERT INTO tbl_student(student_id, person_id, academic_id, id) VALUES (?, ?, ?, ?);";
-    private static final String CREATE_ACADEMIC =
+    private static final String INSERT_ACADEMIC_EMPTY_ENROLL =
             "INSERT INTO tbl_academic(academic_id) VALUES (?);";
+
+    private static final String INSERT_COURSE = "INSERT INTO tbl_course(course_id, course_name, price) VALUES (?, ?, ?);";
 
     /* debugging of creating the first admin */
     private static final String DROP_TBL_PERSON = "DROP TABLE IF EXISTS tbl_person";
     private static final String DROP_TBL_ADMIN = "DROP TABLE IF EXISTS tbl_admin";
+    private static final String DROP_TBL_STUDENT = "DROP TABLE IF EXISTS tbl_student";
+    private static final String DROP_TBL_PROFESSOR = "DROP TABLE IF EXISTS tbl_professor";
+    private static final String DROP_TBL_ACADEMIC = "DROP TABLE IF EXISTS tbl_academic";
+    private static final String DROP_TBL_COURSE = "DROP TABLE IF EXISTS tbl_course";
 
-    public static void dropTablePerson() {
+    public static void dropTable(TableName tableName) {
+        String query = "";
+        switch (tableName) {
+            case PERSON -> query = DROP_TBL_PERSON;
+            case ADMIN -> query = DROP_TBL_ADMIN;
+            case STUDENT -> query = DROP_TBL_STUDENT;
+            case PROFESSOR -> query = DROP_TBL_PROFESSOR;
+            case ACADEMIC -> query = DROP_TBL_ACADEMIC;
+            case COURSE -> query = DROP_TBL_COURSE;
+        }
         try (
                 Connection connection = DBConnect.getConnection();
-                PreparedStatement statement = connection.prepareStatement(DROP_TBL_PERSON);
-                ) {
-            /* deleting table tbl_person */
+                PreparedStatement statement = connection.prepareStatement(query);
+        ) {
+
             statement.execute();
 
         } catch (SQLException e) {
@@ -44,21 +61,36 @@ public class DBUtils {
         }
     }
 
-    public static void dropTableAdmin() {
+    public static int getLastIdFromTable(TableName tableName) {
+        String query = "";
+        int lastId = 0;
+        switch (tableName) {
+            case PERSON -> query = SELECT_LAST_PERSON_ID;
+            case ADMIN -> query = SELECT_LAST_ADMIN_ID;
+            case STUDENT -> query = SELECT_LAST_STUDENT_ID;
+            case PROFESSOR -> query = SELECT_LAST_PROFESSOR_ID;
+            case ACADEMIC -> query = SELECT_LAST_ACADEMIC_ID;
+            case COURSE -> query = SELECT_LAST_COURSE_ID;
+        }
         try (
                 Connection connection = DBConnect.getConnection();
-                PreparedStatement statement = connection.prepareStatement(DROP_TBL_ADMIN);
+                PreparedStatement statementQuery = connection.prepareStatement(query);
         ) {
-            /* deleting table tbl_admin */
-            statement.execute();
 
+            ResultSet resultQuery = statementQuery.executeQuery();
+
+            while (resultQuery.next()) {
+                lastId = resultQuery.getInt(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return lastId;
     }
 
     public static List<Person> getTablePersonData() {
-        List<Person> dbPersons = new ArrayList<>();
+        List<Person> dbUsers = new ArrayList<>();
         try (
                 Connection connection = DBConnect.getConnection();
                 PreparedStatement statement = connection.prepareStatement(SELECT_USERS);
@@ -67,15 +99,14 @@ public class DBUtils {
             /* getting data from table */
             ResultSet result = statement.executeQuery();
 
-            while(result.next()) {
+            while (result.next()) {
                 int person_id = result.getInt("person_id");
                 String firstName = result.getString("firstName");
                 String lastName =result.getString("lastName");
                 String username =result.getString("username");
                 String password =result.getString("password");
 
-//                Person person = new Admin();
-                 Person person = new Person();
+                Person person = new Admin();
 
                 person.setTblPersonId(person_id);
                 person.setFirstName(firstName);
@@ -83,14 +114,14 @@ public class DBUtils {
                 person.setUserName(username);
                 person.setPassword(password);
 
-                dbPersons.add(person);
+                dbUsers.add(person);
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return dbPersons;
+        return dbUsers;
     }
 
     public static List<Admin> getTableAdminData() {
@@ -105,29 +136,36 @@ public class DBUtils {
             ResultSet resultPerson = statementPerson.executeQuery();
             ResultSet resultAdmin = statementAdmin.executeQuery();
 
-            /* to do filter for admins only */
-            while (resultPerson.next() && resultAdmin.next()) {
+            /* filter for admins only */
+            while (resultAdmin.next()) {
                 int tblAdminId = resultAdmin.getInt("admin_id");
                 int tblAdminPersonId = resultAdmin.getInt("person_id");
                 String id = resultAdmin.getString("id");
 
-                int tblPersonId = resultPerson.getInt("person_id");
-                String firstName = resultPerson.getString("firstName");
-                String lastName = resultPerson.getString("lastName");
-                String userName = resultPerson.getString("userName");
-                String password = resultPerson.getString("password");
+                while (resultPerson.next()) {
+                    int tblPersonId = resultPerson.getInt("person_id");
 
-                Admin admin = new Admin();
-                admin.setTblAdminId(tblAdminId);
-                admin.setTblAdminPersonId(tblAdminPersonId);
-                admin.setId(id);
-                admin.setTblPersonId(tblPersonId);
-                admin.setFirstName(firstName);
-                admin.setLastName(lastName);
-                admin.setUserName(userName);
-                admin.setPassword(password);
+                    if (tblAdminPersonId == tblPersonId) {
+                        String firstName = resultPerson.getString("firstName");
+                        String lastName = resultPerson.getString("lastName");
+                        String userName = resultPerson.getString("userName");
+                        String password = resultPerson.getString("password");
 
-                dbAdmins.add(admin);
+                        Admin admin = new Admin();
+                        admin.setTblAdminId(tblAdminId);
+                        admin.setTblAdminPersonId(tblAdminPersonId);
+                        admin.setRoleId(id);
+
+                        admin.setTblPersonId(tblPersonId);
+                        admin.setFirstName(firstName);
+                        admin.setLastName(lastName);
+                        admin.setUserName(userName);
+                        admin.setPassword(password);
+
+                        dbAdmins.add(admin);
+                        break;
+                    }
+                }
             }
         } catch(SQLException e) {
             e.printStackTrace();
@@ -136,13 +174,155 @@ public class DBUtils {
         return dbAdmins;
     }
 
+    public static List<Student> getTableStudentData() {
+        List<Student> dbStudents = new ArrayList<>();
+
+        try(
+                Connection connection = DBConnect.getConnection();
+                PreparedStatement statementPerson = connection.prepareStatement(SELECT_USERS);
+                PreparedStatement statementStudent = connection.prepareStatement(SELECT_STUDENTS);
+                PreparedStatement statementAcademic = connection.prepareStatement(SELECT_ACADEMICS);
+        ) {
+
+            ResultSet resultPerson = statementPerson.executeQuery();
+            ResultSet resultStudent = statementStudent.executeQuery();
+            ResultSet resultAcademic = statementAcademic.executeQuery();
+
+            /* filter for Students only */
+            while (resultStudent.next()) {
+
+                int tblStudentId = resultStudent.getInt("student_id");
+                int tblStudentPersonId = resultStudent.getInt("person_id");
+                String id = resultStudent.getString("id");
+                int tblStudentAcademicId = resultStudent.getInt("academic_id");
+
+                while (resultPerson.next()) {
+                    int tblPersonId = resultPerson.getInt("person_id");
+
+                    if (tblStudentPersonId == tblPersonId) {
+                        String firstName = resultPerson.getString("firstName");
+                        String lastName = resultPerson.getString("lastName");
+                        String userName = resultPerson.getString("userName");
+                        String password = resultPerson.getString("password");
+
+                        while (resultAcademic.next()) {
+                            int tblAcademicId = resultAcademic.getInt("academic_id");
+
+                            if (tblStudentAcademicId == tblAcademicId) {
+                                int course1 = resultAcademic.getInt("course_id");
+                                int course2 = resultAcademic.getInt("course2_id");
+                                int course3 = resultAcademic.getInt("course3_id");
+                                int course4 = resultAcademic.getInt("course4_id");
+                                int course5 = resultAcademic.getInt("course5_id");
+                                int course6 = resultAcademic.getInt("course6_id");
+
+                                Student student = new Student();
+                                student.setTblStudentId(tblStudentId);
+                                student.setTblStudentPersonId(tblStudentPersonId);
+                                student.setRoleId(id);
+                                student.setTblStudentAcademicId(tblStudentAcademicId);
+                                student.setTblPersonId(tblPersonId);
+                                student.setFirstName(firstName);
+                                student.setLastName(lastName);
+                                student.setUserName(userName);
+                                student.setPassword(password);
+
+                                student.setTblAcademicId(tblAcademicId);
+                                student.setCourse1(course1);
+                                student.setCourse2(course2);
+                                student.setCourse3(course3);
+                                student.setCourse4(course4);
+                                student.setCourse5(course5);
+                                student.setCourse6(course6);
+
+                                dbStudents.add(student);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+
+        return dbStudents;
+    }
+
+    public static List<Course> getTableCourseData() {
+        List<Course> dbCourse = new ArrayList<>();
+
+        try (
+                Connection connection = DBConnect.getConnection();
+                PreparedStatement statementCourse = connection.prepareStatement(SELECT_COURSES);
+        ) {
+
+            ResultSet resultCourse = statementCourse.executeQuery();
+
+            while (resultCourse.next()) {
+                int tblCourseId = resultCourse.getInt("course_id");
+                String courseName = resultCourse.getString("course_name");
+                int price = resultCourse.getInt("price");
+
+                Course course = new Course();
+                course.setTblCourseId(tblCourseId);
+                course.setCourseName(courseName);
+                course.setPrice(price);
+
+                dbCourse.add(course);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return dbCourse;
+    }
+
+    public static Academic getTableAcademicData(int academicId) {
+        Academic dbAcademic = new Academic();
+
+        try (Connection connection = DBConnect.getConnection();
+             PreparedStatement statementSelectAcademics = connection.prepareStatement(SELECT_ACADEMICS);
+        ) {
+
+            ResultSet resultAcademic = statementSelectAcademics.executeQuery();
+
+            while (resultAcademic.next()) {
+                int tblAcademicId = resultAcademic.getInt("academic_id");
+
+                if (academicId == tblAcademicId) {
+                    int course1Id = resultAcademic.getInt("course1_id");
+                    int course2Id = resultAcademic.getInt("course2_id");
+                    int course3Id = resultAcademic.getInt("course3_id");
+                    int course4Id = resultAcademic.getInt("course4_id");
+                    int course5Id = resultAcademic.getInt("course5_id");
+                    int course6Id = resultAcademic.getInt("course6_id");
+
+                    dbAcademic.setTblAcademicId(tblAcademicId);
+                    dbAcademic.setCourse1(course1Id);
+                    dbAcademic.setCourse2(course2Id);
+                    dbAcademic.setCourse3(course3Id);
+                    dbAcademic.setCourse4(course4Id);
+                    dbAcademic.setCourse5(course5Id);
+                    dbAcademic.setCourse6(course6Id);
+
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return dbAcademic;
+    }
+
     public static void insertAdmin(Admin admin) {
         try(Connection connection = DBConnect.getConnection();
-            PreparedStatement statementPerson = connection.prepareStatement(CREATE_USER);
-            PreparedStatement statementAdmin = connection.prepareStatement(CREATE_ADMIN);)
+            PreparedStatement statementPerson = connection.prepareStatement(INSERT_PERSON);
+            PreparedStatement statementAdmin = connection.prepareStatement(INSERT_ADMIN);)
         {
-            //"INSERT INTO tbl_person(person_id, firstName, lastName, userName, password) VALUES (?, ?, ?, ?, ?);";
-            //"INSERT INTO tbl_admin(admit_id, person_id, id) VALUES (?, ?, ?);";
+
             statementPerson.setInt(1, admin.getTblPersonId());
             statementPerson.setString(2, admin.getFirstName());
             statementPerson.setString(3, admin.getLastName());
@@ -153,7 +333,7 @@ public class DBUtils {
 
             statementAdmin.setInt(1, admin.getTblAdminId());
             statementAdmin.setInt(2, admin.getTblAdminPersonId());
-            statementAdmin.setString(3, admin.getId());
+            statementAdmin.setString(3, admin.getRoleId());
 
             statementAdmin.executeUpdate();
 
@@ -164,9 +344,10 @@ public class DBUtils {
 
     public static void insertStudent(Student student) {
         try(Connection connection = DBConnect.getConnection();
-            PreparedStatement statementPerson = connection.prepareStatement(CREATE_USER, Statement.RETURN_GENERATED_KEYS);
-            PreparedStatement statementStudent = connection.prepareStatement(CREATE_STUDENT);
-            PreparedStatement statementAcademic = connection.prepareStatement(CREATE_ACADEMIC);)
+//            PreparedStatement statementPerson = connection.prepareStatement(INSERT_USER, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statementPerson = connection.prepareStatement(INSERT_PERSON);
+            PreparedStatement statementStudent = connection.prepareStatement(INSERT_STUDENT);
+            PreparedStatement statementAcademic = connection.prepareStatement(INSERT_ACADEMIC_EMPTY_ENROLL);)
         {
 
             statementPerson.setInt(1, student.getTblPersonId());
@@ -185,7 +366,7 @@ public class DBUtils {
             statementStudent.setInt(1, student.getTblStudentId());
             statementStudent.setInt(2, student.getTblStudentPersonId());
             statementStudent.setInt(3, student.getTblStudentAcademicId());
-            statementStudent.setString(4, student.getId());
+            statementStudent.setString(4, student.getRoleId());
 
             statementStudent.executeUpdate();
 
@@ -194,68 +375,49 @@ public class DBUtils {
         }
     }
 
-    public static List<Student> getTableStudentData() {
-        List<Student> dbStudents = new ArrayList<>();
-
-        try(
+    public static void insertCourse(Course course) {
+        try (
                 Connection connection = DBConnect.getConnection();
-                PreparedStatement statementPerson = connection.prepareStatement(SELECT_USERS);
-                PreparedStatement statementStudent = connection.prepareStatement(SELECT_STUDENTS);
-                PreparedStatement statementAcademic = connection.prepareStatement(SELECT_ACADEMICS);
+                PreparedStatement statementCourse = connection.prepareStatement(INSERT_COURSE);
         ) {
 
-            ResultSet resultPerson = statementPerson.executeQuery();
-            ResultSet resultStudent = statementStudent.executeQuery();
-            ResultSet resultAcademic = statementAcademic.executeQuery();
+            statementCourse.setInt(1, course.getTblCourseId());
+            statementCourse.setString(2, course.getCourseName());
+            statementCourse.setInt(3, course.getPrice());
 
-            /* to do filter for Students only */
-            while (resultPerson.next() && resultStudent.next() && resultAcademic.next()) {
-                if(resultPerson.getInt("person_id") == resultStudent.getInt("person_id")) {
-                    int tblStudentId = resultStudent.getInt("student_id");
-                    int tblStudentPersonId = resultStudent.getInt("person_id");
-                    String id = resultStudent.getString("id");
-                    int tblStudentAcademicId = resultStudent.getInt("academic_id");
-
-                    int tblPersonId = resultPerson.getInt("person_id");
-                    String firstName = resultPerson.getString("firstName");
-                    String lastName = resultPerson.getString("lastName");
-                    String userName = resultPerson.getString("userName");
-                    String password = resultPerson.getString("password");
-
-                    int tblAcademicId = resultAcademic.getInt("academic_id");
-                    int course1 = resultAcademic.getInt("course_id");
-                    int course2 = resultAcademic.getInt("course2_id");
-                    int course3 = resultAcademic.getInt("course3_id");
-                    int course4 = resultAcademic.getInt("course4_id");
-                    int course5 = resultAcademic.getInt("course5_id");
-                    int course6 = resultAcademic.getInt("course6_id");
-
-                    Student student = new Student();
-                    student.setTblStudentId(tblStudentId);
-                    student.setTblStudentPersonId(tblStudentPersonId);
-                    student.setId(id);
-                    student.setTblStudentAcademicId(tblStudentAcademicId);
-                    student.setTblPersonId(tblPersonId);
-                    student.setFirstName(firstName);
-                    student.setLastName(lastName);
-                    student.setUserName(userName);
-                    student.setPassword(password);
-
-                    student.setTblAcademicId(tblAcademicId);
-                    student.setCourse1(course1);
-                    student.setCourse2(course2);
-                    student.setCourse3(course3);
-                    student.setCourse4(course4);
-                    student.setCourse5(course5);
-                    student.setCourse6(course6);
-
-                    dbStudents.add(student);
-                }
-            }
-        } catch(SQLException e) {
+            statementCourse.executeUpdate();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
 
-        return dbStudents;
+    public static void updateAcademicEnroll(Academic academic) {
+        try (Connection connection = DBConnect.getConnection();
+             Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        ) {
+
+            int idAcademic = academic.getTblAcademicId();
+            String query = SELECT_ACADEMICS + " WHERE academic_id = " + idAcademic;
+
+            ResultSet resultAcademic = statement.executeQuery(query);
+
+            while (resultAcademic.next()) {
+                int tblAcademicId = resultAcademic.getInt("academic_id");
+
+                if (idAcademic == tblAcademicId) {
+                    resultAcademic.updateInt("course1_id", academic.getCourse1());
+                    resultAcademic.updateInt("course2_id", academic.getCourse2());
+                    resultAcademic.updateInt("course3_id", academic.getCourse3());
+                    resultAcademic.updateInt("course4_id", academic.getCourse4());
+                    resultAcademic.updateInt("course5_id", academic.getCourse5());
+                    resultAcademic.updateInt("course6_id", academic.getCourse6());
+
+                    resultAcademic.updateRow();
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
