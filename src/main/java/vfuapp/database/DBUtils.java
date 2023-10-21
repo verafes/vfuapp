@@ -7,18 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DBUtils {
-    private static final String SELECT_USERS = "SELECT * FROM tbl_person";
-    private static final String SELECT_ADMINS = "SELECT * FROM tbl_admin";
-    private static final String SELECT_STUDENTS = "SELECT * FROM tbl_student";
-    private static final String SELECT_ACADEMICS = "SELECT * FROM tbl_academic";
-    private static final String SELECT_COURSES = "SELECT * FROM tbl_course";
-
-    private static final String SELECT_LAST_PERSON_ID = "SELECT max(person_id) FROM tbl_person";
-    private static final String SELECT_LAST_ADMIN_ID = "SELECT max(admin_id) FROM tbl_admin";
-    private static final String SELECT_LAST_STUDENT_ID = "SELECT max(student_id) FROM tbl_student";
-    private static final String SELECT_LAST_PROFESSOR_ID = "SELECT max(professor_id) FROM tbl_professor";
-    private static final String SELECT_LAST_ACADEMIC_ID = "SELECT max(academic_id) FROM tbl_academic";
-    private static final String SELECT_LAST_COURSE_ID = "SELECT max(course_id) FROM tbl_course";
+    private static final String SELECT_ALL = "SELECT * FROM ";
+    private static final String SELECT_LAST = "SELECT max(id) FROM ";
+    private static final String DROP = "DROP TABLE IF EXISTS ";
 
     private static final String INSERT_PERSON =
             "INSERT INTO tbl_person(person_id, firstName, lastName, userName, password) VALUES (?, ?, ?, ?, ?);";
@@ -30,30 +21,14 @@ public class DBUtils {
             "INSERT INTO tbl_academic(academic_id) VALUES (?);";
 
     private static final String INSERT_COURSE = "INSERT INTO tbl_course(course_id, course_name, price) VALUES (?, ?, ?);";
+    private static final String SELECT_MAX_ID = "";
 
-    /* debugging of creating the first admin */
-    private static final String DROP_TBL_PERSON = "DROP TABLE IF EXISTS tbl_person";
-    private static final String DROP_TBL_ADMIN = "DROP TABLE IF EXISTS tbl_admin";
-    private static final String DROP_TBL_STUDENT = "DROP TABLE IF EXISTS tbl_student";
-    private static final String DROP_TBL_PROFESSOR = "DROP TABLE IF EXISTS tbl_professor";
-    private static final String DROP_TBL_ACADEMIC = "DROP TABLE IF EXISTS tbl_academic";
-    private static final String DROP_TBL_COURSE = "DROP TABLE IF EXISTS tbl_course";
+    public static void dropTable(Table.NAME tableName) {
 
-    public static void dropTable(TableName tableName) {
-        String query = "";
-        switch (tableName) {
-            case PERSON -> query = DROP_TBL_PERSON;
-            case ADMIN -> query = DROP_TBL_ADMIN;
-            case STUDENT -> query = DROP_TBL_STUDENT;
-            case PROFESSOR -> query = DROP_TBL_PROFESSOR;
-            case ACADEMIC -> query = DROP_TBL_ACADEMIC;
-            case COURSE -> query = DROP_TBL_COURSE;
-        }
         try (
                 Connection connection = DBConnect.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query);
+                PreparedStatement statement = connection.prepareStatement(DROP + tableName);
         ) {
-
             statement.execute();
 
         } catch (SQLException e) {
@@ -61,20 +36,14 @@ public class DBUtils {
         }
     }
 
-    public static int getLastIdFromTable(TableName tableName) {
-        String query = "";
+    public static int getLastId(Table.NAME tableName) {
+        final String tableId = Table.getID(tableName);
+        final String selectLastId = SELECT_MAX_ID.replace("id", tableId) + tableName;
         int lastId = 0;
-        switch (tableName) {
-            case PERSON -> query = SELECT_LAST_PERSON_ID;
-            case ADMIN -> query = SELECT_LAST_ADMIN_ID;
-            case STUDENT -> query = SELECT_LAST_STUDENT_ID;
-            case PROFESSOR -> query = SELECT_LAST_PROFESSOR_ID;
-            case ACADEMIC -> query = SELECT_LAST_ACADEMIC_ID;
-            case COURSE -> query = SELECT_LAST_COURSE_ID;
-        }
+
         try (
                 Connection connection = DBConnect.getConnection();
-                PreparedStatement statementQuery = connection.prepareStatement(query);
+                PreparedStatement statementQuery = connection.prepareStatement(selectLastId);
         ) {
 
             ResultSet resultQuery = statementQuery.executeQuery();
@@ -93,7 +62,7 @@ public class DBUtils {
         List<Person> dbUsers = new ArrayList<>();
         try (
                 Connection connection = DBConnect.getConnection();
-                PreparedStatement statement = connection.prepareStatement(SELECT_USERS);
+                PreparedStatement statement = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_PERSON);
                 ) {
 
             /* getting data from table */
@@ -128,9 +97,10 @@ public class DBUtils {
         List<Admin> dbAdmins = new ArrayList<>();
 
         try(
-                Connection connection = DBConnect.getConnection();
-            PreparedStatement statementPerson = connection.prepareStatement(SELECT_USERS);
-            PreparedStatement statementAdmin = connection.prepareStatement(SELECT_ADMINS);
+            Connection connection = DBConnect.getConnection();
+            PreparedStatement statementPerson = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_PERSON);
+            PreparedStatement statementAdmin = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_ADMIN);
+
             ) {
 
             ResultSet resultPerson = statementPerson.executeQuery();
@@ -179,9 +149,9 @@ public class DBUtils {
 
         try(
                 Connection connection = DBConnect.getConnection();
-                PreparedStatement statementPerson = connection.prepareStatement(SELECT_USERS);
-                PreparedStatement statementStudent = connection.prepareStatement(SELECT_STUDENTS);
-                PreparedStatement statementAcademic = connection.prepareStatement(SELECT_ACADEMICS);
+                PreparedStatement statementPerson = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_PERSON);
+                PreparedStatement statementStudent = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_STUDENT);
+                PreparedStatement statementAcademic = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_ACADEMIC);
         ) {
 
             ResultSet resultPerson = statementPerson.executeQuery();
@@ -250,12 +220,86 @@ public class DBUtils {
         return dbStudents;
     }
 
+    public static List<Professor> getTableProfessorData() {
+        List<Professor> dbProfessors = new ArrayList<>();
+
+        try(
+                Connection connection = DBConnect.getConnection();
+                PreparedStatement statementPerson = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_PERSON);
+                PreparedStatement statementProfessor = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_PROFESSOR);
+                PreparedStatement statementAcademic = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_ACADEMIC);
+        ) {
+
+            ResultSet resultPerson = statementPerson.executeQuery();
+            ResultSet resultProfessor = statementProfessor.executeQuery();
+            ResultSet resultAcademic = statementAcademic.executeQuery();
+
+            while (resultProfessor.next()) {
+
+                int tblProfessorId = resultProfessor.getInt("student_id");
+                int tblProfessorPersonId = resultProfessor.getInt("person_id");
+                String id = resultProfessor.getString("id");
+                int tblProfessorAcademicId = resultProfessor.getInt("academic_id");
+
+                while (resultPerson.next()) {
+                    int tblPersonId = resultPerson.getInt("person_id");
+
+                    if (tblProfessorPersonId == tblPersonId) {
+                        String firstName = resultPerson.getString(Table.TBL_PERSON.FIRST_NAME.toString());
+                        String lastName = resultPerson.getString("lastName");
+                        String userName = resultPerson.getString("userName");
+                        String password = resultPerson.getString("password");
+
+                        while (resultAcademic.next()) {
+                            int tblAcademicId = resultAcademic.getInt("academic_id");
+
+                            if (tblProfessorAcademicId == tblAcademicId) {
+                                int course1 = resultAcademic.getInt("course_id");
+                                int course2 = resultAcademic.getInt("course2_id");
+                                int course3 = resultAcademic.getInt("course3_id");
+                                int course4 = resultAcademic.getInt("course4_id");
+                                int course5 = resultAcademic.getInt("course5_id");
+                                int course6 = resultAcademic.getInt("course6_id");
+
+                                Professor professor = new Professor();
+                                professor.setTblProfessorId(tblProfessorId);
+                                professor.setTblProfessorPersonId(tblProfessorPersonId);
+                                professor.setRoleId(id);
+                                professor.setTblProfessorAcademicId(tblProfessorAcademicId);
+                                professor.setTblPersonId(tblPersonId);
+                                professor.setFirstName(firstName);
+                                professor.setLastName(lastName);
+                                professor.setUserName(userName);
+                                professor.setPassword(password);
+
+                                professor.setTblAcademicId(tblAcademicId);
+                                professor.setCourse1(course1);
+                                professor.setCourse2(course2);
+                                professor.setCourse3(course3);
+                                professor.setCourse4(course4);
+                                professor.setCourse5(course5);
+                                professor.setCourse6(course6);
+
+                                dbProfessors.add(professor);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+
+        return dbProfessors;
+    }
     public static List<Course> getTableCourseData() {
         List<Course> dbCourse = new ArrayList<>();
 
         try (
                 Connection connection = DBConnect.getConnection();
-                PreparedStatement statementCourse = connection.prepareStatement(SELECT_COURSES);
+                PreparedStatement statementCourse = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_COURSE);
         ) {
 
             ResultSet resultCourse = statementCourse.executeQuery();
@@ -283,7 +327,7 @@ public class DBUtils {
         Academic dbAcademic = new Academic();
 
         try (Connection connection = DBConnect.getConnection();
-             PreparedStatement statementSelectAcademics = connection.prepareStatement(SELECT_ACADEMICS);
+             PreparedStatement statementSelectAcademics = connection.prepareStatement(SELECT_ALL + Table.NAME.TBL_ACADEMIC);
         ) {
 
             ResultSet resultAcademic = statementSelectAcademics.executeQuery();
@@ -375,6 +419,38 @@ public class DBUtils {
         }
     }
 
+    public static void insertProfessor(Professor professor) {
+        try(Connection connection = DBConnect.getConnection();
+            PreparedStatement statementPerson = connection.prepareStatement(INSERT_PERSON);
+            PreparedStatement statementProfessor = connection.prepareStatement(INSERT_PERSON);
+            PreparedStatement statementAcademic = connection.prepareStatement(INSERT_ACADEMIC_EMPTY_ENROLL);)
+        {
+
+            statementPerson.setInt(1, professor.getTblPersonId());
+            statementPerson.setString(2, professor.getFirstName());
+            statementPerson.setString(3, professor.getLastName());
+            statementPerson.setString(4, professor.getUserName());
+            statementPerson.setString(5, professor.getPassword());
+
+            statementPerson.executeUpdate();
+
+
+            statementAcademic.setInt(1, professor.getTblProfessorAcademicId());
+
+            statementAcademic.executeUpdate();
+
+            statementProfessor.setInt(1, professor.getTblProfessorId());
+            statementProfessor.setInt(2, professor.getTblProfessorPersonId());
+            statementProfessor.setInt(3, professor.getTblProfessorAcademicId());
+            statementProfessor.setString(4, professor.getRoleId());
+
+            statementProfessor.executeUpdate();
+
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void insertCourse(Course course) {
         try (
                 Connection connection = DBConnect.getConnection();
@@ -397,7 +473,7 @@ public class DBUtils {
         ) {
 
             int idAcademic = academic.getTblAcademicId();
-            String query = SELECT_ACADEMICS + " WHERE academic_id = " + idAcademic;
+            String query = SELECT_ALL + Table.NAME.TBL_ACADEMIC + " WHERE academic_id = " + idAcademic;
 
             ResultSet resultAcademic = statement.executeQuery(query);
 

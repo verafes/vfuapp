@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import vfuapp.database.DBUtils;
-import vfuapp.database.TableName;
+import vfuapp.database.Table;
 
-public class Academic extends Person {
+public abstract class Academic extends Person {
     private int tblAcademicId;
     private int course1;
     private int course2;
@@ -15,16 +15,16 @@ public class Academic extends Person {
     private int course5;
     private int course6;
     private List<String> courses = new ArrayList<>();
-    public static Academic academicForId = new Academic();
+//    public static Academic academicForId = new Academic();
+    public List<String> academics = new ArrayList<>();
 
     public Academic(String firstName, String lastName, List<String> courses) {
         super(firstName, lastName);
-        this.tblAcademicId = DBUtils.getLastIdFromTable(TableName.ACADEMIC) + 1;
+        this.tblAcademicId = DBUtils.getLastId(Table.NAME.TBL_ACADEMIC) + 1;
         if (courses.size() != 0) {
 
         }
     }
-
     public Academic() {}
 
     //to do: create List<String> courses
@@ -120,7 +120,7 @@ public class Academic extends Person {
         }
         DBUtils.updateAcademicEnroll(academic);
         Student.students = DBUtils.getTableStudentData();
-        //Professor.professors = DBUtils.getTableProfessorData();
+        Professor.professors = DBUtils.getTableProfessorData();
     }
 
     public static String getFirstLastName(int academicId) {
@@ -130,13 +130,13 @@ public class Academic extends Person {
                 firstLastNames = student.getFirstName() + " " + student.getLastName();
             }
         }
-//        if (!firstLastNames.isEmpty()) {
-//            for (Professor professor : Professor.professors) {
-//                if (professor.getTblProfessorAcademicId() == academicId) {
-//                    firstLastNames = professor.getFirstName() + " " + professor.getLastName();
-//                }
-//            }
-//        }
+        if (!firstLastNames.isEmpty()) {
+            for (Professor professor : Professor.professors) {
+                if (professor.getTblProfessorAcademicId() == academicId) {
+                    firstLastNames = professor.getFirstName() + " " + professor.getLastName();
+                }
+            }
+        }
 
         if (firstLastNames.isEmpty()) {
             System.out.println("Invalid id");
@@ -144,6 +144,9 @@ public class Academic extends Person {
 
         return firstLastNames;
     }
+
+    public abstract char getRole();
+
     @Override
     public String toString() {
         return "Academic {\n" +
