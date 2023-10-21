@@ -1,6 +1,7 @@
 package vfuapp;
 
 import vfuapp.database.DBUtils;
+import vfuapp.database.Table;
 import vfuapp.database.TableName;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class Student extends Academic {
 
     public Student(String firstName, String lastName, List<String> courses) {
         super(firstName, lastName, courses);
-        int lastTblStudentId = DBUtils.getLastIdFromTable(TableName.STUDENT);
+        int lastTblStudentId = DBUtils.getLastId(Table.NAME.TBL_STUDENT);
         this.tblStudentId = lastTblStudentId + 1;
         this.tblStudentPersonId = getTblPersonId();
         this.tblStudentAcademicId = getTblAcademicId();
@@ -24,7 +25,7 @@ public class Student extends Academic {
 
     public Student(String firstName, String lastName) {
         super(firstName, lastName, new ArrayList<>());
-        int lastTblStudentId = DBUtils.getLastIdFromTable(TableName.STUDENT);
+        int lastTblStudentId = DBUtils.getLastId(Table.NAME.TBL_STUDENT);
         this.tblStudentId = lastTblStudentId + 1;
         this.tblStudentPersonId = getTblPersonId();
         this.tblStudentAcademicId = getTblAcademicId();
@@ -33,6 +34,10 @@ public class Student extends Academic {
 
     public Student() {}
 
+    @Override
+    public char getRole() {
+        return 0;
+    }
 
     public int getTblStudentId() {
         return tblStudentId;

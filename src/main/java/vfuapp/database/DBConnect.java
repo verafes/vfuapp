@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class DBConnect {
+public final class DBConnect {
     private static List<String> getDBProperties(){
         List<String> dbProperties = new ArrayList<>();
 
@@ -30,7 +30,7 @@ public class DBConnect {
     }
 
     public static Connection getConnection() {
-        List<String> dbProperties = getDBProperties();
+        final List<String> dbProperties = getDBProperties();
         Connection connection = null;
 
         try {

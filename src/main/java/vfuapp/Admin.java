@@ -2,16 +2,18 @@ package vfuapp;
 
 import utils.Utils;
 import vfuapp.database.DBUtils;
+import vfuapp.database.Table;
 import vfuapp.database.TableName;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static vfuapp.Professor.professors;
 import static vfuapp.Student.students;
 
 
-public class Admin extends Person implements IPrintAdmin, IExit {
+public final class Admin extends Person implements IPrintAdmin, IExit {
     private int tblAdminId;
     private int tblAdminPersonId;
     private String roleId = "A";
@@ -19,13 +21,20 @@ public class Admin extends Person implements IPrintAdmin, IExit {
 
     public Admin(String firstName, String lastName) {
         super(firstName, lastName);
-        int lastTblAdminId = DBUtils.getLastIdFromTable(TableName.ADMIN);
+        int lastTblAdminId = DBUtils.getLastId(Table.NAME.TBL_ADMIN);
         this.tblAdminId = lastTblAdminId + 1;
         this.tblAdminPersonId = getTblPersonId();
         this.roleId = roleId + 10000 + tblAdminId;
     }
 
-    public Admin(){};
+    @Override
+    public char getRole() {
+        return 0;
+    }
+
+    public Admin(){
+        super();
+    };
 
     public int getTblAdminId() {
         return tblAdminId;
@@ -71,7 +80,23 @@ public class Admin extends Person implements IPrintAdmin, IExit {
         admins = DBUtils.getTableAdminData();
     }
 
+    private void addStudent(String firstName, String lastName) {
+        Student student = new Student(firstName, lastName);
+        DBUtils.insertStudent(student);
+        students = DBUtils.getTableStudentData();
+    }
+
+    private void addProfessor(String firstName, String lastName) {
+        Professor professor = new Professor(firstName, lastName);
+        DBUtils.insertProfessor(professor);
+        professors = DBUtils.getTableProfessorData();
+    }
+    public void addProfessor(Professor professor) {
+        professors.add(professor);
+    }
+
     public void runAdmin() {
+        System.out.println("Running System Administration");
         printQForExit();
 
         Scanner in = new Scanner(System.in);
@@ -113,6 +138,7 @@ public class Admin extends Person implements IPrintAdmin, IExit {
 
     private void runPrintInformation() {
         System.out.println("Running Print Information");
+
         printQForExit();
     }
 
@@ -182,7 +208,7 @@ public class Admin extends Person implements IPrintAdmin, IExit {
         printQForExit();
 
         do {
-            System.out.print("Please enter a course name: ");
+            System.out.print("Please enter a course id: ");
             String input = in.nextLine();
             if(input.equalsIgnoreCase("Q")) {
                 Academic.addCourses(academicId, coursesIds);

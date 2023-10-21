@@ -1,7 +1,7 @@
 package vfuapp;
 
 import vfuapp.database.DBUtils;
-import vfuapp.database.TableName;
+import vfuapp.database.Table;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class Course {
     public Course() {};
 
     public Course(String courseName, int price) {
-        int lastTblCourseId = DBUtils.getLastIdFromTable(TableName.COURSE);
+        int lastTblCourseId = DBUtils.getLastId(Table.NAME.TBL_COURSE);
         this.tblCourseId = lastTblCourseId + 1;
         this.courseName = courseName;
         this.price = price;

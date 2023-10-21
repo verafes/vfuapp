@@ -1,7 +1,11 @@
 package vfuapp;
 
 import vfuapp.database.DBUtils;
+import vfuapp.database.Table;
 import vfuapp.database.TableName;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Person {
     private int tblPersonId;
@@ -9,9 +13,10 @@ public abstract class Person {
     private String lastName;
     private String userName;
     private String password;
+    public List<Admin> users = new ArrayList<>();
 
     public Person(String firstName, String lastName) {
-        int lastTblPersonId = DBUtils.getLastIdFromTable(TableName.PERSON);
+        int lastTblPersonId = DBUtils.getLastId(Table.NAME.TBL_PERSON);
         this.tblPersonId = lastTblPersonId + 1;
         int userNameId = tblPersonId + 1097523;
         this.firstName = capitalizeString(firstName);
@@ -20,7 +25,15 @@ public abstract class Person {
         this.password = generatePassword(userNameId);
     }
 
-    public Person(){};
+    public Person(int tblPersonId, String firstName, String lastName, String userName, String password) {
+        this.tblPersonId = tblPersonId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.userName = userName;
+        this.password = password;
+    };
+
+    public Person() {};
 
     private String capitalizeString(String string) {
         return string.trim().toUpperCase().charAt(0) + string.substring(1).toLowerCase();
@@ -76,6 +89,21 @@ public abstract class Person {
         this.password = password;
     }
 
+    public abstract char getRole();
+
+//    public T getTableData(int id) {
+//        users = DBUtils.getTablePersonData();
+//        for(Admin user : users) {
+//            if (user.getTblPersonId() == id) {
+//                return (T)user;
+//            }
+//        }
+//        return null;
+//    };
+
+    public int getId() {
+        return getTblPersonId();
+    }
 
     @Override
     public String toString() {
